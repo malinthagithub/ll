@@ -2,43 +2,33 @@ const express = require("express");
 const path = require("path");
 const cors = require("cors");
 require("dotenv").config();
-const mysql = require("mysql2");
-
-// Create the MySQL connection using environment variables
-const db = mysql.createConnection({
-    host: process.env.DB_HOST, // Use the environment variable for DB host
-    user: process.env.DB_USER, // Use the environment variable for DB user
-    password: process.env.DB_PASSWORD, // Use the environment variable for DB password
-    database: process.env.DB_NAME, // Use the environment variable for DB name
-    port: process.env.DB_PORT || 3306 // Default to 3306 if not set
-});
+const db = require("./db");  // Ensure correct path to your database file
 
 // Import routes
 const stripeRoutes = require("./routes/stripeRoutes");
 const roomRoutes = require("./routes/room");
 const userRoutes = require("./routes/users");
-const availableRoutes = require('./routes/available');
+const availableRoutes = require('./routes/available'); // Import the availability route
 const bookingRoutes = require("./routes/bookingRoutes");
 const searchRoutes = require('./routes/searchRoutes');
 const reviewRoutes = require('./routes/reviews');
 const revenueroutes = require('./routes/revenue');
 const booktodyRoute = require('./routes/booktody');
 const reportRoutes = require('./routes/reportRoutes');
-const reviewOwnerRoutes = require('./routes/reviewOwnerRoutes');
+const reviewOwnerRoutes = require('./routes/reviewOwnerRoutes'); 
 
 // Create an Express app
 const app = express();
 
 // Middleware setup
-app.use(express.json()); // Allows parsing of JSON data in requests
+app.use(express.json());  // Allows parsing of JSON data in requests
 app.use(
     cors({
-        origin: process.env.FRONTEND_URL || "*", // Use the frontend URL or wildcard for production
-        credentials: true, // Allow cookies/auth headers if needed
+      origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:3003"], // Allow multiple origins
+      credentials: true, // Allow cookies/auth headers if needed
     })
-);
+);  // Enable CORS for frontend
 
-// Enable CORS for frontend
 app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // Serve static files
 
 // Define API routes
@@ -62,8 +52,21 @@ db.connect((err) => {
     }
     console.log("✅ Connected to MySQL database!");
 
-    const PORT = process.env.PORT || 5000;
+    const PORT = process.env.PORT || 8080;
     app.listen(PORT, () => {
         console.log(`🚀 Server is running on port ${PORT}`);
     });
+});
+
+// Global error handling for uncaught exceptions and unhandled promise rejections
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught exception:', err.message);
+    console.error(err.stack);
+    process.exit(1); // Exit the process after logging the error
+});
+
+process.on('unhandledRejection', (err) => {
+    console.error('Unhandled rejection:', err.message);
+    console.error(err.stack);
+    process.exit(1); // Exit the process after logging the error
 });
