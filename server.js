@@ -16,6 +16,7 @@ const revenueroutes = require('./routes/revenue');
 const booktodyRoute = require('./routes/booktody');
 const reportRoutes = require('./routes/reportRoutes');
 const reviewOwnerRoutes = require('./routes/reviewOwnerRoutes'); 
+
 // Create an Express app
 const app = express();
 
@@ -23,11 +24,11 @@ const app = express();
 app.use(express.json());  // Allows parsing of JSON data in requests
 app.use(
     cors({
-      origin: ["http://localhost:3000", "http://localhost:3001","http://localhost:3003" ], // Allow multiple origins
+      origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:3003"], // Allow multiple origins
       credentials: true, // Allow cookies/auth headers if needed
     })
-  );
-   // Enable CORS for frontend
+);  // Enable CORS for frontend
+
 app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // Serve static files
 
 // Define API routes
@@ -41,7 +42,7 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/revenue', revenueroutes);
 app.use('/api/booktody', booktodyRoute);
 app.use('/api/reports', reportRoutes);
-app.use('/room', reviewOwnerRoutes);// Add owner route
+app.use('/room', reviewOwnerRoutes); // Add owner route
 
 // Connect to the database and start the server
 db.connect((err) => {
@@ -51,8 +52,21 @@ db.connect((err) => {
     }
     console.log("✅ Connected to MySQL database!");
 
-    const PORT = process.env.PORT || 5000;
+    const PORT = process.env.PORT || 8080;
     app.listen(PORT, () => {
         console.log(`🚀 Server is running on port ${PORT}`);
     });
+});
+
+// Global error handling for uncaught exceptions and unhandled promise rejections
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught exception:', err.message);
+    console.error(err.stack);
+    process.exit(1); // Exit the process after logging the error
+});
+
+process.on('unhandledRejection', (err) => {
+    console.error('Unhandled rejection:', err.message);
+    console.error(err.stack);
+    process.exit(1); // Exit the process after logging the error
 });
